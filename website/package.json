@@ -1,0 +1,21 @@
+{
+  "name": "lens-landing",
+  "version": "1.0.0",
+  "description": "Lens Browser - Landing page and waitlist",
+  "scripts": {
+    "dev": "npx http-server -c-1 -o -p 8000",
+    "serve": "npx serve",
+    "build": "echo 'Static site - no build needed'",
+    "deploy": "vercel"
+  },
+  "keywords": [
+    "lens",
+    "browser",
+    "ai",
+    "academic",
+    "research",
+    "generative-ui"
+  ],
+  "author": "Lens Team",
+  "license": "MIT"
+}
