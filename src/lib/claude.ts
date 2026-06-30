@@ -73,16 +73,18 @@ Output format:
 </body>
 </html>`
 
+// Fallback mock generator
+async function generateMockUI(request: GenerativeUIRequest): Promise<GenerativeUIResponse> {
+  const { generateGenerativeUIMock } = await import('./claude-mock')
+  return generateGenerativeUIMock(request)
+}
+
 export async function generateGenerativeUI(
   request: GenerativeUIRequest
 ): Promise<GenerativeUIResponse> {
   if (!API_KEY) {
-    return {
-      html: '',
-      css: '',
-      success: false,
-      error: 'Claude API key not configured',
-    }
+    console.warn('Claude API key not configured. Using mock UI.')
+    return generateMockUI(request)
   }
 
   const prompt =

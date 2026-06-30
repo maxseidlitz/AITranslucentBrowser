@@ -1,9 +1,19 @@
 import { useState } from 'react'
-import { invoke } from '@tauri-apps/api/tauri'
 import SearchBar from './components/SearchBar'
 import WebView from './components/WebView'
 import SearchResults from './components/SearchResults'
 import PDFDropZone from './components/PDFDropZone'
+
+// Simple intent classifier (fallback for web dev without Tauri)
+const classifyIntent = (query: string): { category: string; cleaned_query: string } => {
+  const isUrl = query.startsWith('http://') || query.startsWith('https://') ||
+    (query.includes('.') && !query.includes(' ') && query.length > 4)
+
+  return {
+    category: isUrl ? 'url' : 'search',
+    cleaned_query: query
+  }
+}
 
 type ViewType = 'search-bar' | 'webview' | 'results' | 'pdf'
 
@@ -16,9 +26,7 @@ export default function App() {
   const handleSearch = async (input: string) => {
     setIsLoading(true)
     try {
-      const result: { category: string; cleaned_query: string } = await invoke('classify_intent', {
-        query: input,
-      })
+      const result = classifyIntent(input)
 
       if (result.category === 'url') {
         setUrl(result.cleaned_query)
