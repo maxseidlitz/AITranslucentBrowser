@@ -1,12 +1,13 @@
 import { useState } from 'react'
-import { Search, Loader } from 'lucide-react'
+import { Search, Loader, FileText } from 'lucide-react'
 
 interface SearchBarProps {
   onSearch: (query: string) => void
   isLoading: boolean
+  onPDFMode: () => void
 }
 
-export default function SearchBar({ onSearch, isLoading }: SearchBarProps) {
+export default function SearchBar({ onSearch, isLoading, onPDFMode }: SearchBarProps) {
   const [input, setInput] = useState('')
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -24,7 +25,7 @@ export default function SearchBar({ onSearch, isLoading }: SearchBarProps) {
           <p className="text-gray-400 text-lg">Generative-UI Search</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="relative">
+        <form onSubmit={handleSubmit} className="relative mb-6">
           <div className="relative flex items-center">
             <input
               type="text"
@@ -48,8 +49,18 @@ export default function SearchBar({ onSearch, isLoading }: SearchBarProps) {
           </div>
         </form>
 
+        <div className="text-center">
+          <button
+            onClick={onPDFMode}
+            className="inline-flex items-center gap-2 px-6 py-3 bg-gray-700 hover:bg-gray-600 rounded-lg transition-colors"
+          >
+            <FileText size={18} />
+            PDF Citation Tool
+          </button>
+        </div>
+
         <div className="mt-12 text-center text-gray-500 text-sm">
-          <p>Examples: "machine learning papers 2024" • "https://arxiv.org" • PDF upload coming soon</p>
+          <p>Examples: "machine learning papers 2024" • "https://arxiv.org" • "spatial computing research"</p>
         </div>
       </div>
     </div>

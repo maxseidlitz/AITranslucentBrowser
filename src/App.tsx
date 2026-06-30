@@ -3,8 +3,9 @@ import { invoke } from '@tauri-apps/api/tauri'
 import SearchBar from './components/SearchBar'
 import WebView from './components/WebView'
 import SearchResults from './components/SearchResults'
+import PDFDropZone from './components/PDFDropZone'
 
-type ViewType = 'search-bar' | 'webview' | 'results'
+type ViewType = 'search-bar' | 'webview' | 'results' | 'pdf'
 
 export default function App() {
   const [view, setView] = useState<ViewType>('search-bar')
@@ -42,13 +43,32 @@ export default function App() {
   return (
     <div className="h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-white flex flex-col">
       {view === 'search-bar' && (
-        <SearchBar onSearch={handleSearch} isLoading={isLoading} />
+        <SearchBar
+          onSearch={handleSearch}
+          isLoading={isLoading}
+          onPDFMode={() => setView('pdf')}
+        />
       )}
       {view === 'webview' && (
         <WebView url={url} onBack={handleBackToSearch} />
       )}
       {view === 'results' && (
         <SearchResults query={query} onBack={handleBackToSearch} />
+      )}
+      {view === 'pdf' && (
+        <div className="flex-1 overflow-y-auto p-8">
+          <div className="mb-8">
+            <button
+              onClick={handleBackToSearch}
+              className="text-blue-400 hover:text-blue-300 mb-4"
+            >
+              ← Back to Search
+            </button>
+            <h2 className="text-3xl font-bold">PDF Citation Tool</h2>
+            <p className="text-gray-400 mt-2">Upload academic papers to auto-extract metadata and generate citations</p>
+          </div>
+          <PDFDropZone />
+        </div>
       )}
     </div>
   )

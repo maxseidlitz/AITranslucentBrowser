@@ -21,6 +21,7 @@ interface SearchResultsProps {
 
 export default function SearchResults({ query, onBack }: SearchResultsProps) {
   const [papers, setPapers] = useState<Paper[]>([])
+  const [displayedPapers, setDisplayedPapers] = useState<Paper[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [selectedSources, setSelectedSources] = useState<string[]>(['Semantic Scholar', 'arXiv'])
   const [error, setError] = useState<string | null>(null)
@@ -29,6 +30,9 @@ export default function SearchResults({ query, onBack }: SearchResultsProps) {
     const fetchPapers = async () => {
       setIsLoading(true)
       setError(null)
+      setPapers([])
+      setDisplayedPapers([])
+
       try {
         const response = await fetch(
           `https://api.semanticscholar.org/graph/v1/paper/search?query=${encodeURIComponent(
@@ -39,11 +43,25 @@ export default function SearchResults({ query, onBack }: SearchResultsProps) {
         if (!response.ok) throw new Error('Failed to fetch papers')
 
         const data = await response.json()
-        setPapers(data.data || [])
+        const allPapers = data.data || []
+        setPapers(allPapers)
+
+        // Stream papers gradually (every 200ms, add 3 papers)
+        let index = 0
+        const streamInterval = setInterval(() => {
+          const batch = allPapers.slice(index, index + 3)
+          if (batch.length === 0) {
+            clearInterval(streamInterval)
+            setIsLoading(false)
+          } else {
+            setDisplayedPapers((prev) => [...prev, ...batch])
+            index += 3
+          }
+        }, 150)
       } catch (err) {
         setError(err instanceof Error ? err.message : 'An error occurred')
         setPapers([])
-      } finally {
+        setDisplayedPapers([])
         setIsLoading(false)
       }
     }
@@ -51,9 +69,8 @@ export default function SearchResults({ query, onBack }: SearchResultsProps) {
     fetchPapers()
   }, [query])
 
-  const filteredPapers = papers.filter((paper) => {
+  const filteredPapers = displayedPapers.filter((paper) => {
     if (selectedSources.length === 0) return true
-    // Simple filtering logic - can be enhanced
     return true
   })
 
@@ -86,18 +103,28 @@ export default function SearchResults({ query, onBack }: SearchResultsProps) {
 
         {/* Results */}
         <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {isLoading && (
-            <div className="flex items-center justify-center h-full">
-              <div className="text-center">
-                <Loader className="animate-spin mx-auto mb-4" size={32} />
-                <p className="text-gray-400">Searching for papers...</p>
-              </div>
-            </div>
-          )}
-
           {error && (
             <div className="bg-red-900/20 border border-red-700 rounded-lg p-4 text-red-400">
               {error}
+            </div>
+          )}
+
+          {filteredPapers.map((paper) => (
+            <PaperCard key={paper.paperId} paper={paper} />
+          ))}
+
+          {isLoading && filteredPapers.length > 0 && (
+            <div className="flex justify-center py-8">
+              <Loader className="animate-spin text-gray-400" size={24} />
+            </div>
+          )}
+
+          {isLoading && filteredPapers.length === 0 && !error && (
+            <div className="flex items-center justify-center h-full">
+              <div className="text-center">
+                <Loader className="animate-spin mx-auto mb-4" size={32} />
+                <p className="text-gray-400">Building your search results...</p>
+              </div>
             </div>
           )}
 
@@ -106,10 +133,6 @@ export default function SearchResults({ query, onBack }: SearchResultsProps) {
               No papers found for "{query}"
             </div>
           )}
-
-          {filteredPapers.map((paper) => (
-            <PaperCard key={paper.paperId} paper={paper} />
-          ))}
         </div>
       </div>
     </div>
