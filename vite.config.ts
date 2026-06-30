@@ -6,5 +6,14 @@ export default defineConfig({
   build: {
     target: 'ES2020',
     outDir: 'dist'
+  },
+  server: {
+    proxy: {
+      '/api': {
+        target: 'https://api.anthropic.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api/, '')
+      }
+    }
   }
 })
