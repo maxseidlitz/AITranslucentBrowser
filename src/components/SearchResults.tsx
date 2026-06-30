@@ -2,6 +2,8 @@ import { useEffect, useState } from 'react'
 import { ArrowLeft, Loader } from 'lucide-react'
 import PaperCard from './PaperCard'
 import SourceFilter from './SourceFilter'
+import SearchRefiner from './SearchRefiner'
+import YearSlider from './YearSlider'
 
 interface Paper {
   paperId: string
@@ -24,6 +26,8 @@ export default function SearchResults({ query, onBack }: SearchResultsProps) {
   const [displayedPapers, setDisplayedPapers] = useState<Paper[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [selectedSources, setSelectedSources] = useState<string[]>(['Semantic Scholar', 'arXiv'])
+  const [yearRange, setYearRange] = useState<[number, number]>([2015, 2026])
+  const [searchRefinement, setSearchRefinement] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -93,17 +97,26 @@ export default function SearchResults({ query, onBack }: SearchResultsProps) {
       {/* Content */}
       <div className="flex-1 overflow-hidden flex">
         {/* Sidebar Filters */}
-        <div className="w-48 bg-gray-800 border-r border-gray-700 p-4 overflow-y-auto">
+        <div className="w-56 bg-gray-800 border-r border-gray-700 p-4 overflow-y-auto">
           <SourceFilter
             sources={['Semantic Scholar', 'arXiv', 'CrossRef']}
             selected={selectedSources}
             onSelect={setSelectedSources}
           />
+          <YearSlider min={2015} max={2026} onSelect={setYearRange} />
         </div>
 
         {/* Results */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-4">
-          {error && (
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="p-6 border-b border-gray-700">
+            <SearchRefiner
+              value={searchRefinement}
+              onChange={setSearchRefinement}
+              placeholder="Refine search within results..."
+            />
+          </div>
+          <div className="flex-1 overflow-y-auto p-6 space-y-4">
+            {error && (
             <div className="bg-red-900/20 border border-red-700 rounded-lg p-4 text-red-400">
               {error}
             </div>
@@ -128,11 +141,12 @@ export default function SearchResults({ query, onBack }: SearchResultsProps) {
             </div>
           )}
 
-          {!isLoading && filteredPapers.length === 0 && !error && (
-            <div className="text-center text-gray-400 py-12">
-              No papers found for "{query}"
-            </div>
-          )}
+            {!isLoading && filteredPapers.length === 0 && !error && (
+              <div className="text-center text-gray-400 py-12">
+                No papers found for "{query}"
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
